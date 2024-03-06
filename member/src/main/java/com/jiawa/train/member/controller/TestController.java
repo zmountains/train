@@ -1,4 +1,4 @@
-package com.jiawa.train;
+package com.jiawa.train.member.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -6,5 +6,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
     @GetMapping("/hello")
-    public String hello(){ return "hello world!1111";}
+    public String hello(){ return "hello world!1123232";}
 }

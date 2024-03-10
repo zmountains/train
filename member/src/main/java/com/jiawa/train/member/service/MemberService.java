@@ -1,13 +1,17 @@
 package com.jiawa.train.member.service;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.jiawa.train.common.exception.BussinessException;
 import com.jiawa.train.common.exception.BussinessExceptionEnum;
 import com.jiawa.train.common.util.SnowUtil;
 import com.jiawa.train.member.domain.Member;
 import com.jiawa.train.member.domain.MemberExample;
 import com.jiawa.train.member.mapper.MemberMapper;
+import com.jiawa.train.member.req.MemberLoginReq;
 import com.jiawa.train.member.req.MemberRegisterReq;
 import com.jiawa.train.member.req.MemberSendCodeReq;
+import com.jiawa.train.member.resp.MemberLoginResp;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +31,9 @@ public class MemberService {
 
     public long register(MemberRegisterReq req){
         String mobile = req.getMobile();
-        MemberExample memberExample = new MemberExample();
-        memberExample.createCriteria().andMobileEqualTo(mobile);
-        List<Member> list = memberMapper.selectByExample(memberExample);
-        if(!list.isEmpty()){
+        Member membersDB = selectByMobile(mobile);
+
+        if(ObjectUtil.isNotNull(membersDB)){
             throw new BussinessException(BussinessExceptionEnum.MEMBER_MOBILE_EXIST);
         }
 
@@ -43,12 +46,10 @@ public class MemberService {
 
     public void sendCode(MemberSendCodeReq req){
         String mobile = req.getMobile();
-        MemberExample memberExample = new MemberExample();
-        memberExample.createCriteria().andMobileEqualTo(mobile);
-        List<Member> list = memberMapper.selectByExample(memberExample);
+        Member membersDB = selectByMobile(mobile);
 
-        //如果手机号存在，则插入一条记录
-        if(list.isEmpty()){
+        //如果手机号不存在，则插入一条记录
+        if(ObjectUtil.isNull(membersDB)){
             LOG.info("手机号不存在，插入一条记录");
             Member member = new Member();
             member.setMobile(mobile);
@@ -68,5 +69,30 @@ public class MemberService {
 
         // 对接短信通道，发送短信
         LOG.info("对接短信通道");
+    }
+
+    public MemberLoginResp login(MemberLoginReq req){
+        String mobile = req.getMobile();
+        String code = req.getCode();
+        Member membersDB = selectByMobile(mobile);
+
+        //如果手机号不存在，则抛出异常
+        if(ObjectUtil.isNull(membersDB)){
+            throw new BussinessException(BussinessExceptionEnum.MEMBER_MOBILE_NOT_EXIST);
+        }
+
+        //校验短信验证码
+        if(!"8888".equals(code)){
+            throw new BussinessException(BussinessExceptionEnum.MEMBER_MOBILE_CODE_ERROR);
+        }
+
+        return BeanUtil.copyProperties(membersDB,MemberLoginResp.class);
+    }
+
+    private Member selectByMobile(String mobile) {
+        MemberExample memberExample = new MemberExample();
+        memberExample.createCriteria().andMobileEqualTo(mobile);
+        List<Member> list = memberMapper.selectByExample(memberExample);
+        return list.get(0);
     }
 }

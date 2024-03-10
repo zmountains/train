@@ -35,7 +35,7 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public CommonResp<MemberLoginResp> register(@Validated MemberLoginReq req){
+    public CommonResp<MemberLoginResp> register(@Validated @RequestBody MemberLoginReq req){
         MemberLoginResp resp = memberService.login(req);
         return new CommonResp<>(resp);
     }

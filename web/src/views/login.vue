@@ -39,6 +39,7 @@
 
 <script>
 import { defineComponent, reactive } from 'vue';
+import axios from "axios";
 
 export default defineComponent({
   name: "login-view",
@@ -49,7 +50,11 @@ export default defineComponent({
     });
 
     const sendCode = () => {
-      console.log("发送验证码成功！")
+      axios.post("http://localhost:8000/member/member/send-code", {
+        mobile:loginForm.mobile
+      }).then(respond => {
+        console.log(respond);
+      })
     };
 
     const login = () => {

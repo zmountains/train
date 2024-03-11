@@ -26,7 +26,7 @@
               </span>
         </template>
         <a-menu-item key="5">option5</a-menu-item>
-        <a-menu-item key="6">optionds6</a-menu-item>
+        <a-menu-item key="6">optionds 6</a-menu-item>
         <a-menu-item key="7">option7</a-menu-item>
         <a-menu-item key="8">option8</a-menu-item>
       </a-sub-menu>

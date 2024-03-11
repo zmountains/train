@@ -97,6 +97,6 @@ public class MemberService {
         MemberExample memberExample = new MemberExample();
         memberExample.createCriteria().andMobileEqualTo(mobile);
         List<Member> list = memberMapper.selectByExample(memberExample);
-        return list.get(0);
+        return list.isEmpty()?null:list.get(0);
     }
 }

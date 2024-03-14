@@ -33,24 +33,25 @@
 
 
 <script>
-  import { defineComponent, ref } from 'vue';
+import {defineComponent, ref, watch} from 'vue';
   import store from "@/store";
+  import router from "@/router";
 
 
   export default defineComponent({
     name:"the-header",
-    computed: {
-      store() {
-        return store
-      }
-    },
-    components: {
-    },
     setup() {
       let member = store.state.member;
+      const selectedKeys = ref([]);
+
+      watch(() => router.currentRoute.value.path, (newValue) => {
+        console.log('watch', newValue);
+        selectedKeys.value = [];
+        selectedKeys.value.push(newValue);
+      }, {immediate: true});
       return {
         member,
-        selectedKeys1: ref(['2']),
+        selectedKeys
       };
     },
   });

@@ -1,5 +1,6 @@
 <template>
   <p>
+    <a-button type="primary" @click="handleQuery()">刷新</a-button>
     <a-button type="primary" @click="showModal">新增</a-button>
   </p>
   <a-table :dataSource="passengers"
@@ -134,7 +135,8 @@ export default defineComponent({
       passengers,
       columns,
       pagination,
-      handleTableChange
+      handleTableChange,
+      handleQuery
     };
   },
 });

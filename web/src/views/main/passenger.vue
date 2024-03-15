@@ -83,6 +83,7 @@ export default defineComponent({
     ];
     let loading = ref(false);
     const onAdd = () =>{
+      passenger.value = {};
       visible.value = true;
     };
 
@@ -103,7 +104,7 @@ export default defineComponent({
     };
 
     const onEdit = (record) => {
-      passenger.value = record;
+      passenger.value = window.Tool.copy(record);
       visible.value = true;
     };
     const handleTableChange = (pagination) => {

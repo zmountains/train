@@ -4,6 +4,7 @@
   </p>
   <a-table :dataSource="passengers"
            :pagination="pagination"
+           @change="handleTableChange"
            :columns="columns" />
   <a-modal v-model:visible="visible" title="乘车人" @ok="handleOk"
            ok-text="确认" cancel-text="取消">
@@ -86,6 +87,13 @@ export default defineComponent({
         }
       });
     };
+    const handleTableChange = (pagination) => {
+      // console.log("看看自带的分页参数都有啥：" + pagination);
+      handleQuery({
+        page: pagination.current,
+        size: pagination.pageSize
+      });
+    };
 
     const handleQuery = (param) => {
       if (!param) {
@@ -125,7 +133,8 @@ export default defineComponent({
       handleOk,
       passengers,
       columns,
-      pagination
+      pagination,
+      handleTableChange
     };
   },
 });

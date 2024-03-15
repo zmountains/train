@@ -2,7 +2,9 @@
   <p>
     <a-button type="primary" @click="showModal">新增</a-button>
   </p>
-  <a-table :dataSource="passengers" :columns="columns" />
+  <a-table :dataSource="passengers"
+           :pagination="pagination"
+           :columns="columns" />
   <a-modal v-model:visible="visible" title="乘车人" @ok="handleOk"
            ok-text="确认" cancel-text="取消">
     <a-form :model="passenger" :label-col="{span: 4}" :wrapper-col="{ span: 20 }">
@@ -42,6 +44,11 @@ export default defineComponent({
     })
 
     const passengers = ref([]);
+    const pagination = ref({
+      total: 0,
+      current: 1,
+      pageSize: 2,
+    });
     const columns = [
       {
         title: '会员id',
@@ -84,7 +91,7 @@ export default defineComponent({
       if (!param) {
         param = {
           page: 1,
-          size: 2
+          size: pagination.value.pageSize
         };
       }
       axios.get("/member/passenger/query-list", {
@@ -96,6 +103,9 @@ export default defineComponent({
         let data = response.data;
         if (data.success) {
           passengers.value = data.content.list;
+          // 设置分页控件的值
+          pagination.value.current = param.page;
+          pagination.value.total = data.content.total;
         } else {
           notification.error({description: data.message});
         }
@@ -105,7 +115,7 @@ export default defineComponent({
     onMounted(() => {
       handleQuery({
         page: 1,
-        size: 2,
+        size: pagination.value.pageSize,
       });
     });
     return {
@@ -114,7 +124,8 @@ export default defineComponent({
       showModal,
       handleOk,
       passengers,
-      columns
+      columns,
+      pagination
     };
   },
 });

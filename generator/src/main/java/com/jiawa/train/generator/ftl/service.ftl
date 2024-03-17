@@ -1,4 +1,4 @@
-package com.jiawa.train.member.service;
+package com.jiawa.train.${module}.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
@@ -8,12 +8,12 @@ import com.github.pagehelper.PageInfo;
 import com.jiawa.train.common.context.LoginMemberContext;
 import com.jiawa.train.common.resp.PageResp;
 import com.jiawa.train.common.util.SnowUtil;
-import com.jiawa.train.member.domain.${Domain};
-import com.jiawa.train.member.domain.${Domain}Example;
-import com.jiawa.train.member.mapper.${Domain}Mapper;
-import com.jiawa.train.member.req.${Domain}QueryReq;
-import com.jiawa.train.member.req.${Domain}SaveReq;
-import com.jiawa.train.member.resp.${Domain}QueryResp;
+import com.jiawa.train.${module}.domain.${Domain};
+import com.jiawa.train.${module}.domain.${Domain}Example;
+import com.jiawa.train.${module}.mapper.${Domain}Mapper;
+import com.jiawa.train.${module}.req.${Domain}QueryReq;
+import com.jiawa.train.${module}.req.${Domain}SaveReq;
+import com.jiawa.train.${module}.resp.${Domain}QueryResp;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +45,12 @@ public class ${Domain}Service {
     }
 
     public PageResp<${Domain}QueryResp> queryList(${Domain}QueryReq req){
-        Long memberId = req.getMemberId();
+        Long ${module}Id = req.getMemberId();
         ${Domain}Example ${domain}Example = new ${Domain}Example();
         ${domain}Example.setOrderByClause("id desc");
         ${Domain}Example.Criteria criteria = ${domain}Example.createCriteria();
-        if(ObjectUtil.isNotNull(memberId)){
-            criteria.andMemberIdEqualTo(memberId);
+        if(ObjectUtil.isNotNull(${module}Id)){
+            criteria.andMemberIdEqualTo(${module}Id);
         }
 
         LOG.info("查询页码：{}", req.getPage());

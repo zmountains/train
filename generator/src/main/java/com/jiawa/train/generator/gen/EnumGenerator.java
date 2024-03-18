@@ -2,7 +2,7 @@ package com.jiawa.train.generator.gen;
 
 
 import cn.hutool.core.util.StrUtil;
-import com.jiawa.train.member.enums.PassengerTypeEnum;
+import com.jiawa.train.business.enums.TrainTypeEnum;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EnumGenerator {
-     static String path = "web/src/assets/js/enums.js";
+     static String path = "admin/src/assets/js/enums.js";
     public static void main(String[] args) {
         StringBuffer bufferObject = new StringBuffer();
         StringBuffer bufferArray = new StringBuffer();
         long begin = System.currentTimeMillis();
         try {
-            toJson(PassengerTypeEnum.class, bufferObject, bufferArray);
+            toJson(TrainTypeEnum.class, bufferObject, bufferArray);
 
             StringBuffer buffer = bufferObject.append("\r\n").append(bufferArray);
             writeJs(buffer);

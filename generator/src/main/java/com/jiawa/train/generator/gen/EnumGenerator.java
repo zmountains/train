@@ -2,6 +2,8 @@ package com.jiawa.train.generator.gen;
 
 
 import cn.hutool.core.util.StrUtil;
+import com.jiawa.train.business.enums.SeatColEnum;
+import com.jiawa.train.business.enums.SeatTypeEnum;
 import com.jiawa.train.business.enums.TrainTypeEnum;
 
 import java.io.FileOutputStream;
@@ -21,6 +23,8 @@ public class EnumGenerator {
         long begin = System.currentTimeMillis();
         try {
             toJson(TrainTypeEnum.class, bufferObject, bufferArray);
+            toJson(SeatTypeEnum.class, bufferObject, bufferArray);
+            toJson(SeatColEnum.class, bufferObject, bufferArray);
 
             StringBuffer buffer = bufferObject.append("\r\n").append(bufferArray);
             writeJs(buffer);

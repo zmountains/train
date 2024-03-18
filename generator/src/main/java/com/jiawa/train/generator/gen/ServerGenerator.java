@@ -18,9 +18,9 @@ public class ServerGenerator {
     static String vuePath = "web/src/views/main/";
     static String serverPath = "[module]/src/main/java/com/jiawa/train/[module]/";
     static String pomPath = "generator\\pom.xml";
-    static {
-        new File(serverPath).mkdirs();
-    }
+//    static {
+//        new File(serverPath).mkdirs();
+//    }
 
     public static void main(String[] args) throws Exception {
         // 获取mybatis-generator

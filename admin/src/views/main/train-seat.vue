@@ -1,6 +1,7 @@
 <template>
   <p>
     <a-space>
+      <train-select-view v-model="params.trainCode" width="200px"></train-select-view>
       <a-button type="primary" @click="handleQuery()">刷新</a-button>
       <a-button type="primary" @click="onAdd">新增</a-button>
     </a-space>
@@ -94,6 +95,9 @@ export default defineComponent({
       carriageSeatIndex: undefined,
       createTime: undefined,
       updateTime: undefined,
+    });
+    let params = ref({
+      trainCode: null
     });
     const trainSeats = ref([]);
     // 分页的三个属性名是固定的
@@ -192,7 +196,8 @@ export default defineComponent({
       axios.get("/business/admin/train-seat/query-list", {
         params: {
           page: param.page,
-          size: param.size
+          size: param.size,
+          trainCode: params.value.trainCode
         }
       }).then((response) => {
         loading.value = false;
@@ -238,7 +243,8 @@ export default defineComponent({
       onAdd,
       handleOk,
       onEdit,
-      onDelete
+      onDelete,
+      params
     };
   },
 });

@@ -1,7 +1,8 @@
 <template>
   <p>
     <a-space>
-      <a-button type="primary" @click="handleQuery()">刷新</a-button>
+      <train-select-view v-model="params.trainCode"></train-select-view>
+      <a-button type="primary" @click="handleQuery()">查找</a-button>
       <a-button type="primary" @click="onAdd">新增</a-button>
     </a-space>
   </p>
@@ -74,6 +75,9 @@ export default defineComponent({
   components: {StationSelectView, TrainSelectView},
   setup() {
     const visible = ref(false);
+    let params = ref({
+      trainCode:null
+    })
     let trainStation = ref({
       id: undefined,
       trainCode: undefined,
@@ -212,14 +216,15 @@ export default defineComponent({
       if (!param) {
         param = {
           page: 1,
-          size: pagination.value.pageSize
+          size: pagination.value.pageSize,
         };
       }
       loading.value = true;
       axios.get("/business/admin/train-station/query-list", {
         params: {
           page: param.page,
-          size: param.size
+          size: param.size,
+          trainCode:params.value.trainCode
         }
       }).then((response) => {
         loading.value = false;
@@ -267,6 +272,7 @@ export default defineComponent({
       onDelete,
       // filterTrainCodeOption,
       // trains
+      params
     };
   },
 });

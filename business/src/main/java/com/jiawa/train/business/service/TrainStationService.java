@@ -43,9 +43,13 @@ public class TrainStationService {
     }
 
     public PageResp<TrainStationQueryResp> queryList(TrainStationQueryReq req){
+        String trainCode = req.getTrainCode();
         TrainStationExample trainStationExample = new TrainStationExample();
-        trainStationExample.setOrderByClause("id desc");
+        trainStationExample.setOrderByClause("train_code desc, `index` asc");
         TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
+        if(ObjectUtil.isNotNull(trainCode)){
+            criteria.andTrainCodeEqualTo(trainCode);
+        }
 
         LOG.info("查询页码：{}", req.getPage());
         LOG.info("每页条数：{}", req.getSize());

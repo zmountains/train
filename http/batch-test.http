@@ -1,0 +1,12 @@
+GET http://localhost:8091/batch/hello
+Accept: application/json
+
+###
+
+GET http://localhost:8000/batch/hello
+Accept: application/json
+
+###
+
+GET http://localhost:8000/batch/admin/train/gen-seat/D2
+Accept: application/json

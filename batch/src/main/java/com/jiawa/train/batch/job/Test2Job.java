@@ -11,11 +11,11 @@ public class Test2Job implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         System.out.println("TestJob222222 TEST开始");
-         try {
-             Thread.sleep(3000);
-         } catch (InterruptedException e) {
-             e.printStackTrace();
-         }
+//         try {
+//             Thread.sleep(3000);
+//         } catch (InterruptedException e) {
+//             e.printStackTrace();
+//         }
         System.out.println("TestJob222222 TEST结束");
     }
 }

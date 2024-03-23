@@ -63,3 +63,6 @@ Content-Type: application/json
   "name": "com.jiawa.train.batch.job.DailyTrainJob",
   "jobGroupName": "default"
 }
+
+
+

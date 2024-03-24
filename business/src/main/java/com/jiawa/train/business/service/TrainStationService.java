@@ -28,32 +28,32 @@ public class TrainStationService {
     private TrainStationMapper trainStationMapper;
 
 
-    public void save(TrainStationSaveReq req){
+    public void save(TrainStationSaveReq req) {
         DateTime now = DateTime.now();
         TrainStation trainStation = BeanUtil.copyProperties(req, TrainStation.class);
-        if(ObjectUtil.isNull(trainStation.getId())) {
+        if (ObjectUtil.isNull(trainStation.getId())) {
             trainStation.setId(SnowUtil.getSnowflakeNextId());
             trainStation.setCreateTime(now);
             trainStation.setUpdateTime(now);
             trainStationMapper.insert(trainStation);
-        }else{
+        } else {
             trainStation.setUpdateTime(now);
             trainStationMapper.updateByPrimaryKey(trainStation);
         }
     }
 
-    public PageResp<TrainStationQueryResp> queryList(TrainStationQueryReq req){
+    public PageResp<TrainStationQueryResp> queryList(TrainStationQueryReq req) {
         String trainCode = req.getTrainCode();
         TrainStationExample trainStationExample = new TrainStationExample();
         trainStationExample.setOrderByClause("train_code desc, `index` asc");
         TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
-        if(ObjectUtil.isNotNull(trainCode)){
+        if (ObjectUtil.isNotNull(trainCode)) {
             criteria.andTrainCodeEqualTo(trainCode);
         }
 
         LOG.info("查询页码：{}", req.getPage());
         LOG.info("每页条数：{}", req.getSize());
-        PageHelper.startPage(req.getPage(),req.getSize());
+        PageHelper.startPage(req.getPage(), req.getSize());
         List<TrainStation> trainStationList = trainStationMapper.selectByExample(trainStationExample);
 
         PageInfo<TrainStation> pageInfo = new PageInfo<>(trainStationList);
@@ -65,10 +65,17 @@ public class TrainStationService {
         PageResp<TrainStationQueryResp> pageResp = new PageResp<>();
         pageResp.setTotal(pageInfo.getTotal());
         pageResp.setList(list);
-        return  pageResp;
+        return pageResp;
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         trainStationMapper.deleteByPrimaryKey(id);
+    }
+
+    public List<TrainStation> selectByTrainCode(String trainCode) {
+        TrainStationExample trainStationExample = new TrainStationExample();
+        trainStationExample.setOrderByClause("`index` asc");
+        trainStationExample.createCriteria().andTrainCodeEqualTo(trainCode);
+        return trainStationMapper.selectByExample(trainStationExample);
     }
 }

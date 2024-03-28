@@ -176,6 +176,10 @@ export default defineComponent({
         notification.error({description: "请输入目的地"});
         return;
       }
+
+      // 保存查询参数
+      SessionStorage.set(SESSION_TICKET_PARAMS, params.value);
+
       if (!param) {
         param = {
           page: 1,
@@ -227,7 +231,14 @@ export default defineComponent({
     };
 
     onMounted(() => {
-
+      //  "|| {}"是常用技巧，可以避免空指针异常
+      params.value = SessionStorage.get(SESSION_TICKET_PARAMS) || {};
+      if(Tool.isNotEmpty(params.value)){
+        handleQuery({
+          page: 1,
+          size: pagination.value.pageSize
+        });
+      }
     });
 
     return {

@@ -14,6 +14,7 @@
            :loading="loading">
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'operation'">
+        <a-button type="primary" @click="toOrder(record)">预订</a-button>
       </template>
       <template v-else-if="column.dataIndex === 'station'">
         {{record.start}}<br/>
@@ -78,6 +79,7 @@ import {notification} from "ant-design-vue";
 import axios from "axios";
 import StationSelectView from "@/components/station-select.vue";
 import dayjs from "dayjs";
+import router from "@/router";
 
 export default defineComponent({
   name: "ticket-view",
@@ -117,43 +119,47 @@ export default defineComponent({
     let loading = ref(false);
     const params = ref({});
     const columns = [
-    {
-      title: '车次编号',
-      dataIndex: 'trainCode',
-      key: 'trainCode',
-    },
-    {
-      title: '车站',
-      dataIndex: 'station',
-    },
-    {
-      title: '时间',
-      dataIndex: 'time',
-    },
-    {
-      title: '历时',
-      dataIndex: 'duration',
-    },
-    {
-      title: '一等座',
-      dataIndex: 'ydz',
-      key: 'ydz',
-    },
-    {
-      title: '二等座',
-      dataIndex: 'edz',
-      key: 'edz',
-    },
-    {
-      title: '软卧',
-      dataIndex: 'rw',
-      key: 'rw',
-    },
-    {
-      title: '硬卧',
-      dataIndex: 'yw',
-      key: 'yw',
-    },
+      {
+        title: '车次编号',
+        dataIndex: 'trainCode',
+        key: 'trainCode',
+      },
+      {
+        title: '车站',
+        dataIndex: 'station',
+      },
+      {
+        title: '时间',
+        dataIndex: 'time',
+      },
+      {
+        title: '历时',
+        dataIndex: 'duration',
+      },
+      {
+        title: '一等座',
+        dataIndex: 'ydz',
+        key: 'ydz',
+      },
+      {
+        title: '二等座',
+        dataIndex: 'edz',
+        key: 'edz',
+      },
+      {
+        title: '软卧',
+        dataIndex: 'rw',
+        key: 'rw',
+      },
+      {
+        title: '硬卧',
+        dataIndex: 'yw',
+        key: 'yw',
+      },
+      {
+        title: '操作',
+        dataIndex: 'operation',
+      },
     ];
 
 
@@ -214,6 +220,12 @@ export default defineComponent({
       return dayjs('00:00:00', 'HH:mm:ss').second(diff).format('HH:mm:ss');
     };
 
+    const toOrder = (record) => {
+      dailyTrainTicket.value = Tool.copy(record);
+      SessionStorage.set(SESSION_ORDER, dailyTrainTicket.value);
+      router.push("/order")
+    };
+
     onMounted(() => {
 
     });
@@ -228,7 +240,8 @@ export default defineComponent({
       handleQuery,
       loading,
       params,
-      calDuration
+      calDuration,
+      toOrder
     };
   },
 });

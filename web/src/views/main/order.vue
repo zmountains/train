@@ -23,6 +23,33 @@
   选中的乘客：{{passengerChecks}}
   <br/>
   购票列表：{{tickets}}
+
+  <div class="order-tickets">
+    <a-row class="order-tickets-header" v-if="tickets.length > 0">
+      <a-col :span="2">乘客</a-col>
+      <a-col :span="6">身份证</a-col>
+      <a-col :span="4">票种</a-col>
+      <a-col :span="4">座位类型</a-col>
+    </a-row>
+    <a-row class="order-tickets-row" v-for="ticket in tickets" :key="ticket.passengerId">
+      <a-col :span="2">{{ticket.passengerName}}</a-col>
+      <a-col :span="6">{{ticket.passengerIdCard}}</a-col>
+      <a-col :span="4">
+        <a-select v-model:value="ticket.passengerType" style="width: 100%">
+          <a-select-option v-for="item in PASSENGER_TYPE_ARRAY" :key="item.code" :value="item.code">
+            {{item.desc}}
+          </a-select-option>
+        </a-select>
+      </a-col>
+      <a-col :span="4">
+        <a-select v-model:value="ticket.seatTypeCode" style="width: 100%">
+          <a-select-option v-for="item in seatTypes" :key="item.code" :value="item.code">
+            {{item.desc}}
+          </a-select-option>
+        </a-select>
+      </a-col>
+    </a-row>
+  </div>
 </template>
 
 <script>
@@ -45,6 +72,8 @@ export default defineComponent({
     const passengerChecks = ref([]);
     const dailyTrainTicket = SessionStorage.get(SESSION_ORDER) || {};
     console.log("下单的车次信息", dailyTrainTicket);
+
+    const PASSENGER_TYPE_ARRAY = window.PASSENGER_TYPE_ARRAY;
 
     // 购票列表，用于界面展示，并传递到后端接口，用来描述：哪个乘客购买什么座位的票
     // {
@@ -120,7 +149,8 @@ export default defineComponent({
       passengers,
       passengerOptions,
       passengerChecks,
-      tickets
+      tickets,
+      PASSENGER_TYPE_ARRAY
     };
   },
 });
@@ -137,5 +167,23 @@ export default defineComponent({
 .order-train-ticket .order-train-ticket-main {
   color: red;
   font-size: 18px;
+}
+
+.order-tickets {
+  margin: 10px 0;
+  padding: 5px 10px;
+}
+.order-tickets .order-tickets-header {
+  background-color: cornflowerblue;
+  border: solid 1px cornflowerblue;
+  color: white;
+  font-size: 16px;
+  padding: 5px 0;
+}
+.order-tickets .order-tickets-row {
+  border: solid 1px cornflowerblue;
+  border-top: none;
+  vertical-align: middle;
+  line-height: 30px;
 }
 </style>

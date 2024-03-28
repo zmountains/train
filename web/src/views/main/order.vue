@@ -21,11 +21,13 @@
   <a-checkbox-group v-model:value="passengerChecks" :options="passengerOptions" />
   <br/>
   选中的乘客：{{passengerChecks}}
+  <br/>
+  购票列表：{{tickets}}
 </template>
 
 <script>
 
-import {defineComponent, onMounted, ref} from 'vue';
+import {defineComponent, onMounted, ref, watch} from 'vue';
 import passenger from "./passenger.vue";
 import axios from "axios";
 import {notification} from "ant-design-vue";
@@ -43,6 +45,30 @@ export default defineComponent({
     const passengerChecks = ref([]);
     const dailyTrainTicket = SessionStorage.get(SESSION_ORDER) || {};
     console.log("下单的车次信息", dailyTrainTicket);
+
+    // 购票列表，用于界面展示，并传递到后端接口，用来描述：哪个乘客购买什么座位的票
+    // {
+    //   passengerId: 123,
+    //   passengerType: "1",
+    //   passengerName: "张三",
+    //   passengerIdCard: "12323132132",
+    //   seatTypeCode: "1",
+    //   seat: "C1"
+    // }
+    const tickets = ref([]);
+    // 勾选或去掉某个乘客时，在购票列表中加上或去掉一张表
+    watch(() => passengerChecks.value, (newVal, oldVal)=>{
+      console.log("勾选乘客发生变化", newVal, oldVal)
+      // 每次有变化时，把购票列表清空，重新构造列表
+      tickets.value = [];
+      passengerChecks.value.forEach((item) => tickets.value.push({
+        passengerId: item.id,
+        passengerType: item.type,
+        seatTypeCode: seatTypes[0].code,
+        passengerName: item.name,
+        passengerIdCard: item.idCard
+      }))
+    }, {immediate: true});
 
     const SEAT_TYPE = window.SEAT_TYPE;
     console.log(SEAT_TYPE)
@@ -93,7 +119,8 @@ export default defineComponent({
       seatTypes,
       passengers,
       passengerOptions,
-      passengerChecks
+      passengerChecks,
+      tickets
     };
   },
 });

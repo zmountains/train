@@ -173,7 +173,7 @@ create table `daily_train_ticket` (
 
 drop table if exists `confirm_order`;
 create table `confirm_order` (
-                                 `id` bigint not null comment 'id',
+                                     `id` bigint not null comment 'id',
                                  `member_id` bigint not null comment '会员id',
                                  `date` date not null comment '日期',
                                  `train_code` varchar(20) not null comment '车次编号',

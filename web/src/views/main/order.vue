@@ -82,13 +82,24 @@
           </span>
         </a-col>
       </a-row>
+      <br/>
+      选座对象：{{chooseSeatObj}}
+      <br/>
+      <div v-if="chooseSeatType === 0" style="color: red;">
+        您购买的车票不支持选座
+        <div>12306规则：只有全部是一等座或全部是二等座才支持选座</div>
+        <div>12306规则：余票小于一定数量时，不允许选座（本项目以20为例）</div>
+      </div>
+      <div v-else style="text-align: center">
+        <a-switch class="choose-seat-item" v-for="item in SEAT_COL_ARRAY" :key="item.code"
+                  v-model:checked="chooseSeatObj[item.code + '1']" :checked-children="item.desc" :un-checked-children="item.desc" />
+        <div v-if="tickets.length > 1">
+          <a-switch class="choose-seat-item" v-for="item in SEAT_COL_ARRAY" :key="item.code"
+                    v-model:checked="chooseSeatObj[item.code + '2']" :checked-children="item.desc" :un-checked-children="item.desc" />
+        </div>
+        <div style="color: #999999">提示：您可以选择{{tickets.length}}个座位</div>
+      </div>
     </div>
-    <br/>
-    选座类型：{{chooseSeatType}}
-    <br/>
-    选座对象：{{chooseSeatObj}}
-    <br/>
-    座位类型：{{SEAT_COL_ARRAY}}
   </a-modal>
 </template>
 
@@ -253,6 +264,22 @@ export default defineComponent({
           console.log("不是一等座或二等座，不支持选座");
           chooseSeatType.value = 0;
         }
+
+        // 余票小于20张时，不允许选座，否则选座成功率不高，影响出票
+        if (chooseSeatType.value !== 0) {
+          for (let i = 0; i < seatTypes.length; i++) {
+            let seatType = seatTypes[i];
+            // 找到同类型座位
+            if (ticketSeatTypeCodesSet[0] === seatType.code) {
+              // 判断余票，小于20张就不支持选座
+              if (seatType.count < 20) {
+                console.log("余票小于20张就不支持选座")
+                chooseSeatType.value = 0;
+                break;
+              }
+            }
+          }
+        }
       }
 
 
@@ -311,5 +338,8 @@ export default defineComponent({
   border-top: none;
   vertical-align: middle;
   line-height: 30px;
+}
+.order-tickets .choose-seat-item {
+  margin: 5px 5px;
 }
 </style>

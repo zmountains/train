@@ -2,6 +2,7 @@ package com.jiawa.train.business.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
@@ -10,11 +11,15 @@ import com.jiawa.train.business.domain.ConfirmOrder;
 import com.jiawa.train.business.domain.ConfirmOrderExample;
 import com.jiawa.train.business.domain.DailyTrainTicket;
 import com.jiawa.train.business.enums.ConfirmOrderStatusEnum;
+import com.jiawa.train.business.enums.SeatTypeEnum;
 import com.jiawa.train.business.mapper.ConfirmOrderMapper;
 import com.jiawa.train.business.req.ConfirmOrderDoReq;
 import com.jiawa.train.business.req.ConfirmOrderQueryReq;
+import com.jiawa.train.business.req.ConfirmOrderTicketReq;
 import com.jiawa.train.business.resp.ConfirmOrderQueryResp;
 import com.jiawa.train.common.context.LoginMemberContext;
+import com.jiawa.train.common.exception.BussinessException;
+import com.jiawa.train.common.exception.BussinessExceptionEnum;
 import com.jiawa.train.common.resp.PageResp;
 import com.jiawa.train.common.util.SnowUtil;
 import jakarta.annotation.Resource;
@@ -100,6 +105,43 @@ public class ConfirmOrderService {
         LOG.info("查出余票记录：{}",dailyTrainTicket);
 
         // 扣减余票数量，并判断余票是否足够
+        for(ConfirmOrderTicketReq confirmOrderTicketReq : req.getTickets()){
+            SeatTypeEnum seatTypeEnum = EnumUtil.getBy(SeatTypeEnum::getCode, confirmOrderTicketReq.getSeatTypeCode());
+            switch (seatTypeEnum){
+                case YDZ -> {
+                    int countLeft = dailyTrainTicket.getYdz()-1;
+                    if(countLeft < 0){
+                        throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
+                    }else {
+                        dailyTrainTicket.setYdz(countLeft);
+                    }
+                }
+                case EDZ -> {
+                    int countLeft = dailyTrainTicket.getEdz()-1;
+                    if(countLeft < 0){
+                        throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
+                    }else {
+                        dailyTrainTicket.setEdz(countLeft);
+                    }
+                }
+                case RW -> {
+                    int countLeft = dailyTrainTicket.getRw()-1;
+                    if(countLeft < 0){
+                        throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
+                    }else {
+                        dailyTrainTicket.setRw(countLeft);
+                    }
+                }
+                case YW -> {
+                    int countLeft = dailyTrainTicket.getYw()-1;
+                    if(countLeft < 0){
+                        throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR);
+                    }else {
+                        dailyTrainTicket.setYw(countLeft);
+                    }
+                }
+            }
+        }
 
         // 选座
 

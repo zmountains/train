@@ -128,10 +128,10 @@ public class DailyTrainTicketService {
         DateTime now = DateTime.now();
         for(int i = 0; i < stationList.size(); i++){
             TrainStation trainStationStart = stationList.get(i);
-            BigDecimal km = trainStationStart.getKm();
+            BigDecimal km = BigDecimal.ZERO;
             for(int j = i + 1; j < stationList.size(); j++){
                 TrainStation trainStationEnd = stationList.get(j);
-                km.add(trainStationEnd.getKm());
+                km = km.add(trainStationEnd.getKm());
                 DailyTrainTicket dailyTrainTicket = new DailyTrainTicket();
                 dailyTrainTicket.setId(SnowUtil.getSnowflakeNextId());
                 dailyTrainTicket.setDate(date);

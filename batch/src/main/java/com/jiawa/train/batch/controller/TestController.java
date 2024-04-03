@@ -20,6 +20,6 @@ public class TestController {
     public String hello(){
         String businessHello = businessFeign.hello1();
         LOG.info(businessHello);
-        return "hello world! batch!";
+        return "hello world! batch!" + businessHello;
     }
 }

@@ -41,6 +41,8 @@ export default defineComponent({
         let data = response.data;
         if (data.success) {
           trains.value = data.content;
+          console.log("queryAllTrain 保存缓存");
+          SessionStorage.set(SESSION_ALL_TRAIN, trains.value);
         } else {
           notification.error({description: data.message});
         }

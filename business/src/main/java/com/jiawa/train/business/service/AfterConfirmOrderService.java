@@ -125,6 +125,7 @@ public class AfterConfirmOrderService {
             confirmOrderMapper.updateByPrimaryKeySelective(confirmOrderForUpdate);
 
             //模拟调用方出现异常
+            Thread.sleep(10000);
             if (1 == 1) {
                 throw new Exception("测试异常");
             }

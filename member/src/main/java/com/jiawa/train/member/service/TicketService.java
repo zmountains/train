@@ -13,6 +13,7 @@ import com.jiawa.train.member.domain.TicketExample;
 import com.jiawa.train.member.mapper.TicketMapper;
 import com.jiawa.train.member.req.TicketQueryReq;
 import com.jiawa.train.member.resp.TicketQueryResp;
+import io.seata.core.context.RootContext;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,12 @@ public class TicketService {
     private TicketMapper ticketMapper;
 
 
-    public void save(MemberTicketReq req){
+    /**
+     * 会员购买车票后新增保存
+     * @param req
+     */
+    public void save(MemberTicketReq req) throws Exception{
+        LOG.info("seata全局事务ID save：{}", RootContext.getXID());
         DateTime now = DateTime.now();
         Ticket ticket = BeanUtil.copyProperties(req, Ticket.class);
         ticket.setId(SnowUtil.getSnowflakeNextId());

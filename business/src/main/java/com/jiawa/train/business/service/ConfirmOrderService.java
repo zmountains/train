@@ -166,7 +166,12 @@ public class ConfirmOrderService {
 
         LOG.info("最终选座：{}", finalSeatList);
 
-        afterConfirmOrderService.afterDoConfirm(dailyTrainTicket, finalSeatList, tickets, confirmOrder);
+        try {
+            afterConfirmOrderService.afterDoConfirm(dailyTrainTicket, finalSeatList, tickets, confirmOrder);
+        } catch (Exception e){
+            LOG.error("保存购票信息失败",e);
+            throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_EXCEPTION);
+        }
 
     }
 

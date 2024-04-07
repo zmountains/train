@@ -26,14 +26,14 @@ create table `ticket` (
     `member_id` bigint not null comment '会员id',
     `passenger_id` bigint not null comment '乘客id',
     `passenger_name` varchar(20) comment '乘客姓名',
-    `date` date not null comment '日期',
+    `train_date` date not null comment '日期',
     `train_code` varchar(20) not null comment '车次编号',
     `carriage_index` int not null comment '厢序',
-    `row` char(2) not null comment '排号|01，02',
-    `col` char(1) not null comment '列号|枚举[SeatColEnum]',
-    `start` varchar(20) not null comment '出发站',
+    `seat_row` char(2) not null comment '排号|01，02',
+    `seat_col` char(1) not null comment '列号|枚举[SeatColEnum]',
+    `start_station` varchar(20) not null comment '出发站',
     `start_time` time not null comment '出发时间',
-    `end` varchar(20) not null comment '到达站',
+    `end_station` varchar(20) not null comment '到达站',
     `end_time` time not null comment '到达时间',
     `seat_type` char(1) not null comment '座位类型|枚举[SeatTypeEnum]',
     `create_time` datetime(3) comment '新增时间',
@@ -41,3 +41,17 @@ create table `ticket` (
     primary key (`id`),
     index `member_id_index` (`member_id`)
 ) engine=innodb default charset=utf8mb4 comment='车票';
+
+CREATE TABLE IF NOT EXISTS `undo_log` (
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `branch_id`     BIGINT(20)       NOT NULL COMMENT 'branch transaction id',
+    `xid`           VARCHAR(100) NOT NULL COMMENT 'global transaction id',
+    `context`       VARCHAR(128) NOT NULL COMMENT 'undo_log context,such as serialization',
+    `rollback_info` LONGBLOB     NOT NULL COMMENT 'rollback info',
+    `log_status`    INT(11)      NOT NULL COMMENT '0:normal status,1:defense status',
+    `log_created`   DATETIME  NOT NULL COMMENT 'create datetime',
+    `log_modified`  DATETIME  NOT NULL COMMENT 'modify datetime',
+    `ext`           VARCHAR(100) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COMMENT ='AT transaction mode undo table';

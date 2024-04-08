@@ -27,11 +27,14 @@ import com.jiawa.train.common.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ConfirmOrderService {
@@ -51,6 +54,9 @@ public class ConfirmOrderService {
 
     @Resource
     private AfterConfirmOrderService afterConfirmOrderService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
     public void save(ConfirmOrderDoReq req){
         DateTime now = DateTime.now();
         ConfirmOrder confirmOrder = BeanUtil.copyProperties(req, ConfirmOrder.class);
@@ -92,8 +98,16 @@ public class ConfirmOrderService {
     }
 
 
-    public synchronized void doConfirm(ConfirmOrderDoReq req){
+    public void doConfirm(ConfirmOrderDoReq req){
         // 省略业务数据校验，如：车次是否存在，余票是否存在，车次是否在有效期内，tickets条数>0，同乘客同车次是否已买过
+        String key = req.getDate() + "-" + req.getTrainCode();
+        Boolean lock = redisTemplate.opsForValue().setIfAbsent(key, key, 5, TimeUnit.SECONDS);
+        if(lock){
+            LOG.info("恭喜，抢到锁了！");
+        } else {
+            LOG.info("很遗憾，没抢到锁");
+            throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
+        }
 
         Date date = req.getDate();
         String trainCode = req.getTrainCode();
@@ -162,7 +176,8 @@ public class ConfirmOrderService {
                 getSeat(finalSeatList,date,trainCode,confirmOrderTicketReq.getSeatTypeCode(),null, null,
                         dailyTrainTicket.getStartIndex(),dailyTrainTicket.getEndIndex());
             }
-        };
+        }
+        ;
 
         LOG.info("最终选座：{}", finalSeatList);
 
@@ -172,6 +187,9 @@ public class ConfirmOrderService {
             LOG.error("保存购票信息失败",e);
             throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_EXCEPTION);
         }
+
+        LOG.info("购票流程结束，释放锁！key:{}", key);
+        redisTemplate.delete(key);
 
     }
 

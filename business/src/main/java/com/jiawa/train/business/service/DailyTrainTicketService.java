@@ -72,7 +72,7 @@ public class DailyTrainTicketService {
         return queryList(req);
     }
 
-    @Cacheable(value = "DailyTrainTicketService.queryList")
+//    @Cacheable(value = "DailyTrainTicketService.queryList")
     public PageResp<DailyTrainTicketQueryResp> queryList(DailyTrainTicketQueryReq req){
         //去缓存里取数据
         //if(有数据){

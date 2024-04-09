@@ -7,6 +7,8 @@ import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -103,6 +105,8 @@ public class ConfirmOrderService {
     }
 
 
+    //@SentinelResource("doConfirm")
+    @SentinelResource(value = "doConfirm", blockHandler = "doConfirmBlock")
     public void doConfirm(ConfirmOrderDoReq req){
         String key = req.getDate() + "-" + req.getTrainCode();
         // Boolean lock = stringRedisTemplate.opsForValue().setIfAbsent(key, key, 5, TimeUnit.SECONDS);
@@ -124,11 +128,11 @@ public class ConfirmOrderService {
             boolean tryLock = lock.tryLock(0, TimeUnit.SECONDS); //带看门狗
             if(tryLock){
                 LOG.info("恭喜，抢到锁了！");
-                for (int i = 0; i < 30; i++) {
-                    Long expire = stringRedisTemplate.opsForValue().getOperations().getExpire(key);
-                    LOG.info("锁过期时间还有：{}", expire);
-                    Thread.sleep(1000);
-                }
+//                for (int i = 0; i < 30; i++) {
+//                    Long expire = stringRedisTemplate.opsForValue().getOperations().getExpire(key);
+//                    LOG.info("锁过期时间还有：{}", expire);
+//                    Thread.sleep(1000);
+//                }
             } else {
                 //只是没抢到锁，并不知道票抢完了没，所以提示稍后再试
                 LOG.info("很遗憾，没抢到锁");
@@ -393,5 +397,15 @@ public class ConfirmOrderService {
                 }
             }
         }
+    }
+
+    /**
+     * 降级方法，需包含限流方法的所有参数和BlockException参数
+     * @param req
+     * @param e
+     */
+    private void doConfirmBlock(ConfirmOrderDoReq req, BlockException e){
+        LOG.info("购票请求被限流：{}", req);
+        throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_FLOW_EXCEPTION);
     }
 }

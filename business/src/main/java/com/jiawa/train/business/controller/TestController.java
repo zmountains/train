@@ -9,5 +9,15 @@ public class TestController {
 
     @SentinelResource("hello")
     @GetMapping("/hello")
-    public String hello(){ return "hello world! business!";}
+    public String hello() throws InterruptedException {
+        Thread.sleep(500);
+        return "hello world! business!";
+    }
+
+    @SentinelResource("hello1")
+    @GetMapping("/hello1")
+    public String hello1() throws InterruptedException {
+        Thread.sleep(500);
+        return "hello world! business1!";
+    }
 }

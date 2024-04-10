@@ -2,22 +2,25 @@ package com.jiawa.train.business.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.jiawa.train.common.resp.PageResp;
-import com.jiawa.train.common.util.SnowUtil;
 import com.jiawa.train.business.domain.SkToken;
 import com.jiawa.train.business.domain.SkTokenExample;
 import com.jiawa.train.business.mapper.SkTokenMapper;
 import com.jiawa.train.business.req.SkTokenQueryReq;
 import com.jiawa.train.business.req.SkTokenSaveReq;
 import com.jiawa.train.business.resp.SkTokenQueryResp;
+import com.jiawa.train.common.resp.PageResp;
+import com.jiawa.train.common.util.SnowUtil;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -27,6 +30,11 @@ public class SkTokenService {
     @Resource
     private SkTokenMapper skTokenMapper;
 
+    @Resource
+    private DailyTrainSeatService dailyTrainSeatService;
+
+    @Resource
+    private DailyTrainStationService dailyTrainStationService;
 
     public void save(SkTokenSaveReq req){
         DateTime now = DateTime.now();
@@ -66,5 +74,38 @@ public class SkTokenService {
 
     public void delete(Long id){
         skTokenMapper.deleteByPrimaryKey(id);
+    }
+
+    @Transactional
+    public void genDaily(Date date, String trainCode) {
+        LOG.info("生成日期【{}】车次【{}】的令牌记录", DateUtil.formatDate(date), trainCode);
+
+        // 删除某日某车次的令牌信息
+        SkTokenExample skTokenExample = new SkTokenExample();
+        skTokenExample.createCriteria()
+                .andDateEqualTo(date)
+                .andTrainCodeEqualTo(trainCode);
+        skTokenMapper.deleteByExample(skTokenExample);
+
+        DateTime now = DateTime.now();
+        SkToken skToken = new SkToken();
+        skToken.setId(SnowUtil.getSnowflakeNextId());
+        skToken.setDate(date);
+        skToken.setTrainCode(trainCode);
+        skToken.setCreateTime(now);
+        skToken.setUpdateTime(now);
+
+        //该日期车次下所有的座位，包括所有类型的座位
+        int seatCount = dailyTrainSeatService.countSeat(date, trainCode);
+
+        //该日期车次下所有的站
+        int stationCount = dailyTrainStationService.countStation(date, trainCode);
+
+        //需要根据实际卖票比例来定，一趟火车最多可以卖（seatCount * stationCount）张火车票
+        int count = seatCount * stationCount * 3/4;
+        LOG.info("车次【{}】初始生成令牌数：{}", trainCode, count);
+        skToken.setCount(count);
+
+        skTokenMapper.insert(skToken);
     }
 }

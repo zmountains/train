@@ -31,3 +31,8 @@ Accept: application/json
 
 GET http://localhost:8000/business/admin/daily-train-ticket/query-list3?page=1&size=5&trainCode=G1&start=广州&end=北京
 Accept: application/json
+
+###
+
+GET http://localhost:8000/business/kaptcha/image-code/123
+Accept: application/json

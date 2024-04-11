@@ -68,6 +68,7 @@ public class ConfirmOrderService {
 
     @Autowired
     private RedissonClient redissonClient;
+
     public void save(ConfirmOrderDoReq req){
         DateTime now = DateTime.now();
         ConfirmOrder confirmOrder = BeanUtil.copyProperties(req, ConfirmOrder.class);

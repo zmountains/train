@@ -1,6 +1,7 @@
 package com.jiawa.train.business.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -14,6 +15,8 @@ import com.jiawa.train.business.mapper.cust.SkTokenMapperCust;
 import com.jiawa.train.business.req.SkTokenQueryReq;
 import com.jiawa.train.business.req.SkTokenSaveReq;
 import com.jiawa.train.business.resp.SkTokenQueryResp;
+import com.jiawa.train.common.exception.BussinessException;
+import com.jiawa.train.common.exception.BussinessExceptionEnum;
 import com.jiawa.train.common.resp.PageResp;
 import com.jiawa.train.common.util.SnowUtil;
 import jakarta.annotation.Resource;
@@ -22,6 +25,7 @@ import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +51,9 @@ public class SkTokenService {
 
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     public void save(SkTokenSaveReq req){
         DateTime now = DateTime.now();
@@ -146,12 +153,57 @@ public class SkTokenService {
             LOG.error("购票异常",e);
         }
 
-        // 令牌约等于库存，令牌没有了，就不再卖票，不需要再进入购票主流程去判断库存，判断令牌肯定比判断库存效率高
-        int updateCount = skTokenMapperCust.decrease(date, trainCode);
-        if (updateCount > 0) {
+        //购票
+        String skTokenCountKey = RedisKeyPreEnum.SK_TOKEN_COUNT + "-" + DateUtil.formatDate(date) + "-" + trainCode;
+        Object skTokenCount = redisTemplate.opsForValue().get(skTokenCountKey);
+        if(skTokenCount != null){
+            LOG.info("缓存中有该车次令牌大闸的key：{}", skTokenCountKey);
+            Long count = redisTemplate.opsForValue().decrement(skTokenCountKey, 1);
+            if(count < 0L){
+                LOG.error("获取令牌失败：{}", skTokenCountKey);
+                throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_SK_TOKEN_FAIL);
+            }else {
+                LOG.info("获取令牌后，令牌余数：{}", count);
+                redisTemplate.expire(skTokenCountKey, 60, TimeUnit.SECONDS);
+                if(count % 5 == 0){
+                    skTokenMapperCust.decrease(date, trainCode, 5);
+                }
+                return true;
+            }
+        }else {
+            LOG.info("缓存中没有该车次令牌大闸的key：{}", skTokenCountKey);
+            //检查是否还有令牌
+            SkTokenExample skTokenExample = new SkTokenExample();
+            skTokenExample.createCriteria()
+                    .andDateEqualTo(date)
+                    .andTrainCodeEqualTo(trainCode);
+            List<SkToken> tokenCountList = skTokenMapper.selectByExample(skTokenExample);
+            if(CollUtil.isEmpty(tokenCountList)){
+                LOG.info("找不到日期【{}】车次【{}】的令牌记录", DateUtil.formatDate(date), trainCode);
+                return false;
+            }
+            SkToken skToken = tokenCountList.get(0);
+            if(skToken.getCount() <= 0){
+                LOG.info("日期【{}】车次【{}】的令牌余量为0", DateUtil.formatDate(date), trainCode);
+                return false;
+            }
+
+            //令牌还有余量
+            //令牌余数-1
+            Integer count = skToken.getCount() - 1;
+            skToken.setCount(count);
+            LOG.info("将该车次令牌大闸放入缓存中，key：{}，count：{}", skTokenCountKey, count);
+            redisTemplate.opsForValue().set(skTokenCountKey, String.valueOf(count), 60, TimeUnit.SECONDS);
+//            skTokenMapper.updateByPrimaryKey(skToken);
             return true;
-        } else {
-            return false;
         }
+//
+//        // 令牌约等于库存，令牌没有了，就不再卖票，不需要再进入购票主流程去判断库存，判断令牌肯定比判断库存效率高
+//        int updateCount = skTokenMapperCust.decrease(date, trainCode);
+//        if (updateCount > 0) {
+//            return true;
+//        } else {
+//            return false;
+//        }
     }
 }

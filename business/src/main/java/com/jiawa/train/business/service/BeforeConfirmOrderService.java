@@ -2,7 +2,9 @@ package com.jiawa.train.business.service;
 
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.fastjson.JSON;
 import com.jiawa.train.business.enums.RedisKeyPreEnum;
+import com.jiawa.train.business.enums.RocketMQTopicEnum;
 import com.jiawa.train.business.req.ConfirmOrderDoReq;
 import com.jiawa.train.common.context.LoginMemberContext;
 import com.jiawa.train.common.exception.BussinessException;
@@ -78,9 +80,11 @@ public class BeforeConfirmOrderService {
                 LOG.info("很遗憾，没抢到锁");
                 throw new BussinessException(BussinessExceptionEnum.CONFIRM_ORDER_LOCK_FAIL);
             }
-
-            // 可以购票：TODO:发送MQ，等待出票
-            LOG.info("准备发送MQ，等待出票");
+            // 发送MQ排队购票
+            String reqJson = JSON.toJSONString(req);
+            LOG.info("排队购票，发送mq开始，消息：{}", reqJson);
+            rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), reqJson);
+            LOG.info("排队购票，发送mq结束");
         } catch (InterruptedException e) {
             LOG.error("购票异常",e);
         }

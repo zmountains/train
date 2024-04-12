@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.jiawa.train.business.req.ConfirmOrderDoReq;
+import com.jiawa.train.business.service.BeforeConfirmOrderService;
 import com.jiawa.train.business.service.ConfirmOrderService;
 import com.jiawa.train.common.exception.BussinessExceptionEnum;
 import com.jiawa.train.common.resp.CommonResp;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/confirm-order")
 public class ConfirmOrderController {
     @Resource
-    private ConfirmOrderService confirmOrderService;
+    private BeforeConfirmOrderService beforeConfirmOrderService;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -48,7 +49,7 @@ public class ConfirmOrderController {
             stringRedisTemplate.delete(imageCodeToken);
         }
 
-        confirmOrderService.doConfirm(req);
+        beforeConfirmOrderService.beforeDoConfirm(req);
         return new CommonResp<>();
     }
 

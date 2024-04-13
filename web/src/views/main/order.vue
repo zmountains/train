@@ -139,6 +139,13 @@
     </p>
     <a-button type="primary" danger block @click="validFirstImageCode">提交验证码</a-button>
   </a-modal>
+
+  <a-modal v-model:visible="lineModalVisible" :title="null" :footer="null" :maskClosable="false" :closable="false"
+           style="top: 50px; width: 400px">
+    <div class="book-line">
+      <loading-outlined /> 系统正在处理中...
+    </div>
+  </a-modal>
 </template>
 
 <script>
@@ -164,6 +171,7 @@ export default defineComponent({
 
     const PASSENGER_TYPE_ARRAY = window.PASSENGER_TYPE_ARRAY;
     const visible = ref(false);
+    const lineModalVisible = ref(false);
 
     // 购票列表，用于界面展示，并传递到后端接口，用来描述：哪个乘客购买什么座位的票
     // {
@@ -367,9 +375,12 @@ export default defineComponent({
       }).then((response) => {
         let data = response.data;
         if (data.success) {
-          imageCode.value = null;
+          //imageCode.value = null;
+          //imageCodeModalVisible.value = false;
+          // notification.success({description: "下单成功！"});
+          visible.value = false;
           imageCodeModalVisible.value = false;
-          notification.success({description: "下单成功！"});
+          lineModalVisible.value = true;
         } else {
           notification.error({description: data.message});
         }
@@ -457,7 +468,8 @@ export default defineComponent({
       firstImageCodeTarget,
       firstImageCodeModalVisible,
       showFirstImageCodeModal,
-      validFirstImageCode
+      validFirstImageCode,
+      lineModalVisible
     };
   },
 });

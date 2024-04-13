@@ -25,6 +25,7 @@ import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,9 @@ public class SkTokenService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Value("${spring.profiles.active}")
+    private String env;
 
     public void save(SkTokenSaveReq req){
         DateTime now = DateTime.now();
@@ -130,27 +134,29 @@ public class SkTokenService {
 
     public boolean validSkToken(Date date, String trainCode, Long memberId){
         LOG.info("会员【{}】获取日期【{}】车次【{}】的令牌开始", memberId, DateUtil.formatDate(date), trainCode);
+        if (!env.equals("dev")) {
 
-        //先获取令牌锁，再校验令牌余量，防止机器人抢票，lockKey就是令牌，用来表示【谁能做什么】的一个凭证
-        String lockKey = RedisKeyPreEnum.SK_TOKEN + "-" + DateUtil.formatDate(date) + "-" + trainCode + "-" + memberId;
-        RLock lock = null;
-        //使用redisson
-        lock = redissonClient.getLock(lockKey);
-       /* waitTime ——  the maximum time to acquire the lock 等待获取锁时间（最大尝试获得锁时间），超时返回false
-        leaseTime ——  lease time 锁时长，即n秒后自动释放锁
-        time unit ——  time unit 时间单位   */
-        try {
-            boolean tryLock = lock.tryLock(0, 5, TimeUnit.SECONDS);; //不带看门狗
-            //boolean tryLock = lock.tryLock(0, TimeUnit.SECONDS); //带看门狗
-            if(tryLock){
-                LOG.info("恭喜，抢到令牌锁了！lockKey：{}",lockKey);
-            } else {
-                //只是没抢到锁，并不知道票抢完了没，所以提示稍后再试
-                LOG.info("很遗憾，没抢到令牌锁");
-                return false;
+            //先获取令牌锁，再校验令牌余量，防止机器人抢票，lockKey就是令牌，用来表示【谁能做什么】的一个凭证
+            String lockKey = RedisKeyPreEnum.SK_TOKEN + "-" + DateUtil.formatDate(date) + "-" + trainCode + "-" + memberId;
+            RLock lock = null;
+            //使用redisson
+            lock = redissonClient.getLock(lockKey);
+           /* waitTime ——  the maximum time to acquire the lock 等待获取锁时间（最大尝试获得锁时间），超时返回false
+            leaseTime ——  lease time 锁时长，即n秒后自动释放锁
+            time unit ——  time unit 时间单位   */
+            try {
+                boolean tryLock = lock.tryLock(0, 5, TimeUnit.SECONDS);; //不带看门狗
+                //boolean tryLock = lock.tryLock(0, TimeUnit.SECONDS); //带看门狗
+                if(tryLock){
+                    LOG.info("恭喜，抢到令牌锁了！lockKey：{}",lockKey);
+                } else {
+                    //只是没抢到锁，并不知道票抢完了没，所以提示稍后再试
+                    LOG.info("很遗憾，没抢到令牌锁");
+                    return false;
+                }
+            } catch (InterruptedException e) {
+                LOG.error("购票异常",e);
             }
-        } catch (InterruptedException e) {
-            LOG.error("购票异常",e);
         }
 
         //购票

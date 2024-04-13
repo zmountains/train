@@ -12,6 +12,7 @@ import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,27 +29,32 @@ public class ConfirmOrderController {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Value("${spring.profiles.active}")
+    private String env;
+
     private static final Logger LOG = LoggerFactory.getLogger(ConfirmOrderService.class);
 
     @SentinelResource(value = "doConfirmDo", blockHandler = "doConfirmBlock")
     @PostMapping ("/do")
     public CommonResp<Object> doConfirm(@RequestBody @Validated ConfirmOrderDoReq req){
-        //图形验证码校验
-        String imageCodeToken = req.getImageCodeToken();
-        String imageCode = req.getImageCode();
-        String imageCodeRedis = stringRedisTemplate.opsForValue().get(imageCodeToken);
-        LOG.info("从redis中获取到的验证码：{}",imageCodeRedis);
-        if(ObjectUtil.isEmpty(imageCodeRedis)){
-            return new CommonResp<>(false, "验证码已过期", null);
-        }
-        //验证码校验，大小写忽略，提升体验
-        if(!imageCodeRedis.equalsIgnoreCase(imageCode)) {
-            return new CommonResp<>(false, "验证码不正确", null);
-        } else {
-            //验证通过之后，移除验证码
-            stringRedisTemplate.delete(imageCodeToken);
-        }
+        if (!env.equals("dev")) {
+            //图形验证码校验
+            String imageCodeToken = req.getImageCodeToken();
+            String imageCode = req.getImageCode();
+            String imageCodeRedis = stringRedisTemplate.opsForValue().get(imageCodeToken);
+            LOG.info("从redis中获取到的验证码：{}",imageCodeRedis);
+            if(ObjectUtil.isEmpty(imageCodeRedis)){
+                return new CommonResp<>(false, "验证码已过期", null);
+            }
+            //验证码校验，大小写忽略，提升体验
+            if(!imageCodeRedis.equalsIgnoreCase(imageCode)) {
+                return new CommonResp<>(false, "验证码不正确", null);
+            } else {
+                //验证通过之后，移除验证码
+                stringRedisTemplate.delete(imageCodeToken);
+            }
 
+        }
         beforeConfirmOrderService.beforeDoConfirm(req);
         return new CommonResp<>();
     }

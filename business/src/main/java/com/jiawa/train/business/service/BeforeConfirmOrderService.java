@@ -5,6 +5,7 @@ import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.jiawa.train.business.domain.ConfirmOrder;
+import com.jiawa.train.business.dto.ConfirmOrderMQDto;
 import com.jiawa.train.business.enums.ConfirmOrderStatusEnum;
 import com.jiawa.train.business.enums.RocketMQTopicEnum;
 import com.jiawa.train.business.mapper.ConfirmOrderMapper;
@@ -107,9 +108,13 @@ public class BeforeConfirmOrderService {
         confirmOrderMapper.insert(confirmOrder);
 
         // 发送MQ排队购票
-        req.setLogId(MDC.get("LOG_ID"));
-        req.setMemberId(LoginMemberContext.getId());
-        String reqJson = JSON.toJSONString(req);
+        ConfirmOrderMQDto confirmOrderMQDto = new ConfirmOrderMQDto();
+        confirmOrderMQDto.setLogId(MDC.get("LOG_ID"));
+        confirmOrderMQDto.setDate(req.getDate());
+        confirmOrderMQDto.setTrainCode(req.getTrainCode());
+//        req.setLogId(MDC.get("LOG_ID"));
+//        req.setMemberId(LoginMemberContext.getId());
+        String reqJson = JSON.toJSONString(confirmOrderMQDto);
         LOG.info("排队购票，发送mq开始，消息：{}", reqJson);
         rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), reqJson);
         LOG.info("排队购票，发送mq结束");

@@ -171,7 +171,19 @@ public class ConfirmOrderService {
                     LOG.info("本次处理{}条确认订单",list.size());
                 }
 
-                list.forEach(this::sell);
+                list.forEach(confirmOrder -> {
+                    try {
+                        sell(confirmOrder);
+                    } catch (BussinessException e) {
+                        if (e.getE().equals(BussinessExceptionEnum.CONFIRM_ORDER_TICKET_COUNT_ERROR)) {
+                            LOG.info("本订单余票不足，继续售卖下一个订单");
+                            confirmOrder.setStatus(ConfirmOrderStatusEnum.EMPTY.getCode());
+                            updateStatus(confirmOrder);
+                        } else {
+                            throw e;
+                        }
+                    }
+                });
             }
         } catch (InterruptedException e) {
             LOG.error("购票异常",e);
@@ -404,7 +416,7 @@ public class ConfirmOrderService {
         }
     }
 
-    private static void reduceTickets(ConfirmOrderDoReq req, DailyTrainTicket dailyTrainTicket) {
+    private void reduceTickets(ConfirmOrderDoReq req, DailyTrainTicket dailyTrainTicket) {
         for(ConfirmOrderTicketReq confirmOrderTicketReq : req.getTickets()){
             SeatTypeEnum seatTypeEnum = EnumUtil.getBy(SeatTypeEnum::getCode, confirmOrderTicketReq.getSeatTypeCode());
             switch (seatTypeEnum){

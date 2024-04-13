@@ -18,6 +18,7 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -106,6 +107,7 @@ public class BeforeConfirmOrderService {
         confirmOrderMapper.insert(confirmOrder);
 
         // 发送MQ排队购票
+        req.setLogId(MDC.get("LOG_ID"));
         req.setMemberId(LoginMemberContext.getId());
         String reqJson = JSON.toJSONString(req);
         LOG.info("排队购票，发送mq开始，消息：{}", reqJson);

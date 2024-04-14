@@ -19,10 +19,10 @@
   <a-divider></a-divider>
   <b>勾选要购票的乘客：</b>&nbsp;
   <a-checkbox-group v-model:value="passengerChecks" :options="passengerOptions" />
-  <br/>
-  选中的乘客：{{passengerChecks}}
-  <br/>
-  购票列表：{{tickets}}
+<!--  <br/>-->
+<!--  选中的乘客：{{passengerChecks}}-->
+<!--  <br/>-->
+<!--  购票列表：{{tickets}}-->
 
   <div class="order-tickets">
     <a-row class="order-tickets-header" v-if="tickets.length > 0">
@@ -83,9 +83,9 @@
           </span>
         </a-col>
       </a-row>
-      <br/>
-      选座对象：{{chooseSeatObj}}
-      <br/>
+<!--      <br/>-->
+<!--      选座对象：{{chooseSeatObj}}-->
+<!--      <br/>-->
       <div v-if="chooseSeatType === 0" style="color: red;">
         您购买的车票不支持选座
         <div>12306规则：只有全部是一等座或全部是二等座才支持选座</div>
@@ -100,9 +100,9 @@
         </div>
         <div style="color: #999999">提示：您可以选择{{tickets.length}}个座位</div>
       </div>
-      <br/>
-      最终购票：{{tickets}}
-      最终选座：{{chooseSeatObj}}
+<!--      <br/>-->
+<!--      最终购票：{{tickets}}-->
+<!--      最终选座：{{chooseSeatObj}}-->
     </div>
   </a-modal>
 
@@ -143,7 +143,12 @@
   <a-modal v-model:visible="lineModalVisible" :title="null" :footer="null" :maskClosable="false" :closable="false"
            style="top: 50px; width: 400px">
     <div class="book-line">
-      <loading-outlined /> 确认订单： {{confirmOrderId}} 系统正在处理中...
+      <div v-show="confirmOrderLineCount < 0">
+        <loading-outlined /> 系统正在处理中...
+      </div>
+      <div v-show="confirmOrderLineCount >= 0">
+        <loading-outlined /> 您前面还有{{confirmOrderLineCount}}位用户在购票，排队中
+      </div>
     </div>
   </a-modal>
 </template>
@@ -173,6 +178,7 @@ export default defineComponent({
     const visible = ref(false);
     const lineModalVisible = ref(false);
     const confirmOrderId = ref();
+    const confirmOrderLineCount = ref(-1);
 
     // 购票列表，用于界面展示，并传递到后端接口，用来描述：哪个乘客购买什么座位的票
     // {
@@ -383,11 +389,49 @@ export default defineComponent({
           imageCodeModalVisible.value = false;
           lineModalVisible.value = true;
           confirmOrderId.value = data.content;
+          queryLineCount();
         } else {
           notification.error({description: data.message});
         }
       });
     }
+    /* ------------------- 定时查询订单状态 --------------------- */
+    //确认订单后定时查询
+    let queryLineCountInterval;
+
+    //定时查询订单结果/排队数量
+    const queryLineCount = () => {
+      confirmOrderLineCount.value = -1;
+      queryLineCountInterval = setInterval(function () {
+        axios.get("/business/confirm-order/query-line-count/" + confirmOrderId.value).then((response) => {
+          let data = response.data;
+          if(data.success){
+            let result = data.content;
+            switch (result) {
+              case -1:
+                notification.success({description: "购票成功！"});
+                lineModalVisible.value = false;
+                clearInterval(queryLineCountInterval);
+                break;
+              case -2:
+                notification.success({description: "购票失败！"});
+                lineModalVisible.value = false;
+                clearInterval(queryLineCountInterval);
+                break;
+              case -3:
+                notification.success({description: "抱歉，没票了！"});
+                lineModalVisible.value = false;
+                clearInterval(queryLineCountInterval);
+                break;
+              default:
+                confirmOrderLineCount.value = result;
+            }
+          } else {
+            notification.error({description:data.message});
+          }
+        });
+      }, 500);
+    };
 
     /* ------------------- 第二层验证码 --------------------- */
     const imageCodeModalVisible = ref();
@@ -472,7 +516,8 @@ export default defineComponent({
       showFirstImageCodeModal,
       validFirstImageCode,
       lineModalVisible,
-      confirmOrderId
+      confirmOrderId,
+      confirmOrderLineCount
     };
   },
 });

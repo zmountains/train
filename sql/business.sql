@@ -180,7 +180,7 @@ create table `confirm_order` (
                                  `start` varchar(20) not null comment '出发站',
                                  `end` varchar(20) not null comment '到达站',
                                  `daily_train_ticket_id` bigint not null comment '余票ID',
-                                 `tickets` json not null comment '车票',
+                                 `tickets` json not null comment '车票'    ,
                                  `status` char(1) not null comment '订单状态|枚举[ConfirmOrderStatusEnum]',
                                  `create_time` datetime(3) comment '新增时间',
                                  `update_time` datetime(3) comment '修改时间',

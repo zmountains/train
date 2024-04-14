@@ -7,7 +7,6 @@ import com.alibaba.fastjson.JSON;
 import com.jiawa.train.business.domain.ConfirmOrder;
 import com.jiawa.train.business.dto.ConfirmOrderMQDto;
 import com.jiawa.train.business.enums.ConfirmOrderStatusEnum;
-import com.jiawa.train.business.enums.RocketMQTopicEnum;
 import com.jiawa.train.business.mapper.ConfirmOrderMapper;
 import com.jiawa.train.business.req.ConfirmOrderDoReq;
 import com.jiawa.train.common.context.LoginMemberContext;
@@ -15,7 +14,6 @@ import com.jiawa.train.common.exception.BussinessException;
 import com.jiawa.train.common.exception.BussinessExceptionEnum;
 import com.jiawa.train.common.util.SnowUtil;
 import jakarta.annotation.Resource;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +29,11 @@ public class BeforeConfirmOrderService {
 
     private static final Logger LOG = LoggerFactory.getLogger(BeforeConfirmOrderService.class);
 
+//    @Resource
+//    public RocketMQTemplate rocketMQTemplate;
+
     @Resource
-    public RocketMQTemplate rocketMQTemplate;
+    private ConfirmOrderService confirmOrderService;
 
     @Resource
     private SkTokenService skTokenService;
@@ -114,10 +115,11 @@ public class BeforeConfirmOrderService {
         confirmOrderMQDto.setTrainCode(req.getTrainCode());
 //        req.setLogId(MDC.get("LOG_ID"));
 //        req.setMemberId(LoginMemberContext.getId());
-        String reqJson = JSON.toJSONString(confirmOrderMQDto);
-        LOG.info("排队购票，发送mq开始，消息：{}", reqJson);
-        rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), reqJson);
-        LOG.info("排队购票，发送mq结束");
+//        String reqJson = JSON.toJSONString(confirmOrderMQDto);
+//        LOG.info("排队购票，发送mq开始，消息：{}", reqJson);
+//        rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), reqJson);
+//        LOG.info("排队购票，发送mq结束");
+        confirmOrderService.doConfirm(confirmOrderMQDto);
         return confirmOrder.getId();
 
 //        } catch (InterruptedException e) {

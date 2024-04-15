@@ -1,12 +1,11 @@
 package com.jiawa.train.business.req;
 
-import com.jiawa.train.common.req.PageReq;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
-public class SeatSellReq extends PageReq {
+public class SeatSellReq {
     /**
      * 日期
      */

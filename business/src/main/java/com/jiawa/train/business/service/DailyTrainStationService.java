@@ -126,4 +126,20 @@ public class DailyTrainStationService {
         }
         return (int) l;
     }
+
+    /**
+     * 按日期车次查询车站列表，用于界面显示一列车经过的车站
+     * @param date
+     * @param trainCode
+     * @return
+     */
+    public List<DailyTrainStationQueryResp> queryByTrain(Date date, String trainCode){
+        DailyTrainStationExample dailyTrainStationExample = new DailyTrainStationExample();
+        dailyTrainStationExample.setOrderByClause("'index' asc");
+        dailyTrainStationExample.createCriteria()
+                .andDateEqualTo(date)
+                .andTrainCodeEqualTo(trainCode);
+        List<DailyTrainStation> list = dailyTrainStationMapper.selectByExample(dailyTrainStationExample);
+        return BeanUtil.copyToList(list, DailyTrainStationQueryResp.class);
+    }
 }

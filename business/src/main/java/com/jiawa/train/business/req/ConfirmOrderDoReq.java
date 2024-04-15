@@ -70,6 +70,10 @@ public class ConfirmOrderDoReq {
      */
     private String logId;
 
+    /**
+     * 排队人数
+     */
+    private int lineNumber;
     public String getLogId() {
         return logId;
     }
@@ -150,6 +154,14 @@ public class ConfirmOrderDoReq {
         this.imageCodeToken = imageCodeToken;
     }
 
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
     @Override
     public String toString() {
         return "ConfirmOrderDoReq{" +
@@ -163,6 +175,7 @@ public class ConfirmOrderDoReq {
                 ", imageCode='" + imageCode + '\'' +
                 ", imageCodeToken='" + imageCodeToken + '\'' +
                 ", logId='" + logId + '\'' +
+                ", lineNumber=" + lineNumber +
                 '}';
     }
 }

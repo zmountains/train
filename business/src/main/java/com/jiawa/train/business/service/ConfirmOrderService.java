@@ -504,4 +504,14 @@ public class ConfirmOrderService {
             return result;
         }
     }
+
+    public Integer cancle(Long id){
+       ConfirmOrderExample confirmOrderExample = new ConfirmOrderExample();
+       confirmOrderExample.createCriteria()
+               .andIdEqualTo(id)
+               .andStatusEqualTo(ConfirmOrderStatusEnum.INIT.getCode());
+       ConfirmOrder confirmOrder = new ConfirmOrder();
+       confirmOrder.setStatus(ConfirmOrderStatusEnum.CANCEL.getCode());
+       return confirmOrderMapper.updateByExampleSelective(confirmOrder,confirmOrderExample);
+    }
 }

@@ -66,6 +66,12 @@ public class ConfirmOrderController {
         return new CommonResp<>(count);
     }
 
+    @GetMapping("/cancel/{id}")
+    public CommonResp<Integer> cancle(@PathVariable Long id){
+        Integer count = confirmOrderService.cancle(id);
+        return new CommonResp<>(count);
+    }
+
     /**
      * 降级方法，需包含限流方法的所有参数和BlockException参数
      * @param req

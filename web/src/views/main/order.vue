@@ -400,7 +400,7 @@ export default defineComponent({
 
     //取消排队
     const onCancelOrder = () => {
-      axios.get("/business/confirm-order/cancle/" + confirmOrderId.value).then((response) => {
+      axios.get("/business/confirm-order/cancel/" + confirmOrderId.value).then((response) => {
         let data = response.data;
         if(data.success){
           let result = data.content;

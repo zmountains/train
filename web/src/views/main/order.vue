@@ -150,6 +150,8 @@
         <loading-outlined /> 您前面还有{{confirmOrderLineCount}}位用户在购票，排队中
       </div>
     </div>
+    <br/>
+    <a-button type="primary" danger @click="onCancelOrder">取消购票</a-button>
   </a-modal>
 </template>
 
@@ -395,6 +397,26 @@ export default defineComponent({
         }
       });
     }
+
+    //取消排队
+    const onCancelOrder = () => {
+      axios.get("/business/confirm-order/cancle/" + confirmOrderId.value).then((response) => {
+        let data = response.data;
+        if(data.success){
+          let result = data.content;
+          if(result === 1){
+            notification.success({description:"取消成功！"});
+            clearInterval(queryLineCountInterval);
+            lineModalVisible.value = false;
+          } else {
+            notification.error({description:"取消失败！"});
+          }
+        } else {
+          notification.error({description:data.message});
+        }
+      });
+    }
+
     /* ------------------- 定时查询订单状态 --------------------- */
     //确认订单后定时查询
     let queryLineCountInterval;

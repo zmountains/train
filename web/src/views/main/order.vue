@@ -443,7 +443,7 @@ export default defineComponent({
     */
     const loadImageCode = () => {
       imageCodeToken.value = Tool.uuid(8);
-      imageCodeSrc.value = process.env.VUE_APP_SERVER + '/business/kaptcha/image-code/' + imageCodeToken.value;
+      imageCodeSrc.value = process.env.VUE_APP_SERVER + 'business/kaptcha/image-code/' + imageCodeToken.value;
     };
     const showImageCodeModal = () => {
       loadImageCode();

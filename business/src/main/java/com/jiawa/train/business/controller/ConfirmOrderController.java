@@ -37,6 +37,7 @@ public class ConfirmOrderController {
     @SentinelResource(value = "doConfirmDo", blockHandler = "doConfirmBlock")
     @PostMapping ("/do")
     public CommonResp<Object> doConfirm(@RequestBody @Validated ConfirmOrderDoReq req){
+        LOG.info("env = ", env);
         if (!env.equals("dev")) {
             //图形验证码校验
             String imageCodeToken = req.getImageCodeToken();

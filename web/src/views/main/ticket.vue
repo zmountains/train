@@ -1,7 +1,7 @@
 <template>
   <p>
     <a-space>
-      <a-date-picker v-model:value="params.date" valueFormat="YYYY-MM-DD" placeholder="请选择日期"></a-date-picker>
+      <a-date-picker v-model:value="params.date" valueFormat="YYYY-MM-DD" :disabled-date="disabledDate" placeholder="请选择日期"></a-date-picker>
       <station-select-view v-model="params.start" width="200px"></station-select-view>
       <station-select-view v-model="params.end" width="200px"></station-select-view>
       <a-button type="primary" @click="handleQuery()">查找</a-button>
@@ -15,7 +15,7 @@
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'operation'">
         <a-space>
-          <a-button type="primary" @click="toOrder(record)">预订</a-button>
+          <a-button type="primary" @click="toOrder(record)" :disabled="isExpire(record)">{{isExpire(record) ? "已停止售票" : "预定"}}</a-button>
           <router-link :to="{
             path: '/seat',
             query: {
@@ -287,6 +287,22 @@ export default defineComponent({
       });
     };
 
+    //不能选择今天以前以及两周后的日期
+    const disabledDate = current => {
+      return current && (current <= dayjs().add(-1, 'day') || current > dayjs().add(14,'day'));
+    };
+
+    //判断是否过期
+    const isExpire = (record) => {
+      let startDateTimeString = record.date.repeat(/-/g,"/") + " " +record.startTime;
+      let startDateTime = new Date(startDateTimeString);
+
+      //当前时间
+      let now = new Date();
+
+      return now.valueOf() >= startDateTime.valueOf();
+    }
+
     onMounted(() => {
       //  "|| {}"是常用技巧，可以避免空指针异常
       params.value = SessionStorage.get(SESSION_TICKET_PARAMS) || {};
@@ -311,7 +327,9 @@ export default defineComponent({
       calDuration,
       toOrder,
       stations,
-      showStation
+      showStation,
+      disabledDate,
+      isExpire
     };
   },
 });
